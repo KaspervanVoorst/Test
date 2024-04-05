@@ -31,18 +31,31 @@ class ConceptCollection implements \IteratorAggregate
         return $this->concepts[$IRI];
     }
 
+    /**
+     * @param string $IRI
+     * @return int
+     */
     public function getTransitiveSubtypeCountByIRI(string $IRI): int
+    {
+        return count($this->getTransitiveSubtypesByIRI($IRI));
+    }
+
+    /**
+     * @param string $IRI
+     * @return array
+     */
+    public function getTransitiveSubtypesByIRI(string $IRI): array
     {
         $concept = $this->getByIRI($IRI);
         $subtypes = $concept->getSubtypes();
 
-        $subtypeCount = \count($subtypes);
-
+        $transitiveSubtypes = [];
         foreach ($subtypes as $subtype) {
-            $subtypeCount += $this->getTransitiveSubtypeCountByIRI($subtype->getIRI());
+            $subtypeTransitiveSubtypes = $this->getTransitiveSubtypesByIRI($subtype->getIRI());
+            $transitiveSubtypes = array_merge($transitiveSubtypes, $subtypeTransitiveSubtypes);
         }
 
-        return $subtypeCount;
+        return array_unique(array_merge($transitiveSubtypes, $subtypes), SORT_REGULAR);
     }
 
     /**

@@ -11,6 +11,7 @@ use Kaspervanvoorst\MoxioAssessment\ApiBundle\Repository\OTLRepository;
 use Kaspervanvoorst\MoxioAssessment\OTLBundle\Concept\Collection\Factory\ConceptCollectionFactory;
 use Kaspervanvoorst\MoxioAssessment\OutputBundle\ConsoleOutputWriter;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -56,10 +57,15 @@ class GetConceptsCollectionFromAPI extends Command
         $conceptCollectionFactory = new ConceptCollectionFactory();
 
         $concepts = [];
+        $progressBar = new ProgressBar($output, count($listData));
+        $output->writeln('Loading collection...');
+
+        $progressBar->start();
         foreach ($listData as $conceptListItem) {
-            $output->writeln('Item: ' . $conceptListItem->getName());
             $concepts[] = $apiRepository->getByIRI($conceptListItem->getIRI());
+            $progressBar->advance(1);
         }
+        $progressBar->finish();
 
         $conceptCollection = $conceptCollectionFactory->buildCollection($concepts);
 
